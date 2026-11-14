@@ -63,7 +63,6 @@ target_link_libraries(${PROJECT_NAME}
   crypto
   ssl
   z
-  z
   m
   stdc++
   SceGxm_stub

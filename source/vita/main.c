@@ -326,6 +326,11 @@ int main(int argc, char *argv[]) {
     }
 
     ui_init();
+    if (vita_shaders_failed()) {
+        fatal_dialog("A graphics shader failed to compile.\n\nMake sure libshacccg.suprx is extracted correctly.");
+        sceKernelExitProcess(0);
+        return 0;
+    }
     input_init();
 
     setDefaults();

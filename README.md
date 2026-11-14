@@ -41,7 +41,7 @@ If you're looking for games, check out [Planet Virtual Boy's homebrew section](h
 
 ## Building
 
-Install [VitaSDK](https://vitasdk.org) with the `vitaGL`, `vitaShaRK`, `libmathneon`, `libpng`, `libjpeg`, `zlib` and `minizip` packages (all available through `vdpm`). Fetch the inih submodule, then build:
+Install [VitaSDK](https://vitasdk.org) with the `vitaGL`, `vitaShaRK`, `libmathneon`, `libpng`, `libjpeg`, `zlib` and `minizip` (with its `bzip2`, `lzma`, `zstd`, `ppmd` and `openssl` dependencies) packages (all available through `vdpm`). Fetch the inih submodule, then build:
 
 ```
 git submodule update --init

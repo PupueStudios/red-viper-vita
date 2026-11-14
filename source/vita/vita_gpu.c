@@ -37,13 +37,23 @@ static GLuint compile(GLenum type, const char *src) {
     glCompileShader(sh);
     GLint ok = 0;
     glGetShaderiv(sh, GL_COMPILE_STATUS, &ok);
-    if (!ok) shader_failed = true;
+    if (!ok) {
+        shader_failed = true;
+        glDeleteShader(sh);
+        return 0;
+    }
     return sh;
 }
 
 GLuint vita_build_program(const char *vs, const char *fs, const char *const *attribs, int attrib_count) {
+    if (shader_failed) return 0;
     GLuint v = compile(GL_VERTEX_SHADER, vs);
     GLuint f = compile(GL_FRAGMENT_SHADER, fs);
+    if (!v || !f) {
+        if (v) glDeleteShader(v);
+        if (f) glDeleteShader(f);
+        return 0;
+    }
     GLuint p = glCreateProgram();
     glAttachShader(p, v);
     glAttachShader(p, f);
@@ -52,8 +62,6 @@ GLuint vita_build_program(const char *vs, const char *fs, const char *const *att
     GLint ok = 0;
     glGetProgramiv(p, GL_LINK_STATUS, &ok);
     if (!ok) shader_failed = true;
-    glDeleteShader(v);
-    glDeleteShader(f);
     return p;
 }
 
@@ -86,6 +94,7 @@ static GLuint make_target(GLuint tex) {
 }
 
 void gpu_init(void) {
+    if (shader_failed) return;
     sChar = vita_build_program(
         "uniform vec2 uPosOffset;\n"
         "uniform vec3 uPalette[24];\n"

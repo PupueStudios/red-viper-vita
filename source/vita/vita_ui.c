@@ -5,6 +5,7 @@
 #include <psp2/pgf.h>
 #include <psp2/power.h>
 #include <psp2/rtc.h>
+#include <psp2/sysmodule.h>
 #include <stdio.h>
 #include <jpeglib.h>
 #include <stdlib.h>
@@ -86,6 +87,7 @@ static void pgf_free(void *userdata, void *p) {
 }
 
 static void font_init(void) {
+    if (sceSysmoduleIsLoaded(SCE_SYSMODULE_PGF) != SCE_SYSMODULE_LOADED) sceSysmoduleLoadModule(SCE_SYSMODULE_PGF);
     unsigned int error = 0;
     SceFontNewLibParams params = {NULL, 1, NULL, pgf_alloc, pgf_free, NULL, NULL, NULL, NULL, NULL, NULL};
     font_lib = sceFontNewLib(&params, &error);
