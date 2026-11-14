@@ -56,6 +56,13 @@ target_link_libraries(${PROJECT_NAME}
   png
   jpeg
   minizip
+  ppmd
+  bz2
+  lzma
+  zstd
+  crypto
+  ssl
+  z
   z
   m
   stdc++
@@ -75,6 +82,7 @@ target_link_libraries(${PROJECT_NAME}
   SceSysmem_stub
   SceProcessmgr_stub
   SceLibKernel_stub
+  pthread
 )
 
 vita_create_self(eboot.bin ${PROJECT_NAME} UNSAFE)
