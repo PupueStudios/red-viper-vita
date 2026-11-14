@@ -1,0 +1,8 @@
+build
+build-*
+*.vpk
+*.velf
+*.self
+eboot.bin
+*.vb
+*.zip
