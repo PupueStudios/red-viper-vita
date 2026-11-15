@@ -1,43 +1,35 @@
-Red Viper for PS Vita
-=====================
+Red Viper Vita
 
 A Virtual Boy emulator for the PlayStation Vita, ported from [Red Viper](https://github.com/skyfloogle/red-viper) for the Nintendo 3DS.
-It keeps Red Viper's V810 core and ARM dynamic recompiler, which runs natively on the Vita's Cortex-A9, and renders on the GPU through [vitaGL](https://github.com/Rinnegatamante/vitaGL). Colour modes are ported from [VBoy Color](https://github.com/yuk27/VBoyColor).
-
-> **Personal build - do not distribute.** This tree combines Red Viper's Reality Boy-derived code, whose license forbids making money from it, with code from VBoy Color, which is GPL-3.0. GPL-3.0 does not allow extra restrictions like that, so the combined program may be built and used privately but not shared, unless the authors of VBoy Color or Reality Boy grant permission.
+It keeps Red Viper's V810 core and ARM dynamic recompiler, which runs natively on the Vita's Cortex-A9, and renders on the GPU through [vitaGL](https://github.com/Rinnegatamante/vitaGL).
 
 ## Features
 
 * V810 dynarec with busywait detection
 * Red Viper's hardware VIP renderer, running on the GPU through vitaGL
-* Colour modes from VBoy Color: Tint (11 colours), Multicolor (16 palettes, one colour per Virtual Boy shade) and Gradient (6 ramps), with per-game suggestions and per-game memory
+* Six display colours: red, white, green, amber, blue and purple
 * Integer 2x, fit or stretch scaling, sharp or smooth filtering, and an LED-grid shader
 * Stereo output as left eye, right eye, red/cyan, red/blue or red/green anaglyph, or side by side
 * Battery saves, plus 10 savestate slots with screenshot previews
-* Game browser with built-in box art, remembers the last folder
-* PS button opens the pause menu in-game
+* Game browser with built-in box art
 
 ## Installing
 
-* Install the VPK with VitaShell. The dynarec needs executable memory, so the app is built as **unsafe homebrew**: enable *Unsafe Homebrew* in HENkaku settings.
+* Install the VPK with VitaShell.
 * vitaGL compiles its shaders on the console, so `libshacccg.suprx` must be extracted to `ur0:data/` with [ShaRKF00D](https://github.com/Rinnegatamante/ShaRKF00D) (needed by every vitaGL homebrew).
 * Put `.vb` or `.zip` ROMs in `ux0:data/red-viper/roms` (any folder works; the browser remembers the last one).
 * Box art for the official library is built in and matched by ROM name, ignoring region tags if there's no exact match. To add your own art, put `<rom name>.png` or `.jpg` in `ux0:data/red-viper/images`; your images take priority.
-* Colour choices made while a game is running are remembered for that game in `ux0:data/red-viper/colors.ini`; games without one start in the scheme VBoy Color suggests for them.
 * Battery saves go to `ux0:data/red-viper/saves`, savestates and their thumbnails to `ux0:data/red-viper/savestates`, settings to `ux0:data/red-viper/vita.ini`.
 
 If you're looking for games, check out [Planet Virtual Boy's homebrew section](https://www.virtual-boy.com/homebrew/)!
 
 ## Controls
 
-| | Standard layout | Dual D-Pad layout |
-|---|---|---|
-| Left D-Pad | D-Pad / left stick | D-Pad / left stick |
-| Right D-Pad | Right stick | Triangle / Cross / Square / Circle |
-| A / B | Circle / Cross (Square is also B) | Rear touch right / left half, or right stick right / left |
-| L / R | L / R | L / R |
-| Fast-forward | Hold or toggle Triangle | Pause menu toggle |
-| Pause menu | PS button (press it again in the menu to go to the LiveArea), or tap the screen | Same |
+Standard Layout: Left D-Pad / left stick for movement, right stick for the right D-Pad, Circle / Cross for A / B (Square also works as B), L / R for shoulder buttons, and Triangle for fast-forward.
+
+Dual D-Pad Layout: Left D-Pad / left stick for movement, Triangle / Cross / Square / Circle for the right D-Pad, rear touchpad or right stick for A / B, L / R for shoulder buttons, and the Pause Menu for fast-forward.
+
+Pause Menu: Press the PS button or tap the screen. Press the PS button again to return to the LiveArea.
 
 ## Building
 
@@ -49,14 +41,6 @@ make
 ```
 
 This produces `build/red_viper.vpk`.
-
-## Layout
-
-* `source/common` - V810 core, dynarec, hardware VIP renderer logic, VSU sound
-* `source/arm` - dynarec entry/exit and relocation table
-* `source/vita` - Vita frontend: vitaGL renderer backend, colour engine, audio, input, JIT memory, menus
-* `sce_sys` - LiveArea assets
-* `assets` - logo and box art packed into the VPK
 
 ## License
 
@@ -114,18 +98,8 @@ Reality Boy is in no way affiliated with either of these parties
 ### Credits
 
 * Red Viper (skyfloogle and contributors) - the emulator this port is based on.
-* VBoy Color (yuk27) - colour schemes, per-game suggestions and the shade colorizer model (GPL-3.0).
 * Rinnegatamante - vitaGL.
 * Everyone mentioned in the license. Without Reality Boy and Red Dragon it wouldn't have been possible.
 * smealum and contributors - ctrulib.
-* Vappy, Team Fail, HtheB, hippy dave and kane159 on GBAtemp - early testing.
 * benhoyt - inih.
-* Myria - libkhax
-* thunderstruck - CIA banner sound (taken from Fishbone).
-* nop90 - Reality Boy backports and fixes.
 * danielps - Initial 3DS port and V810 dynarec.
-* Floogle - 3DS hardware renderer; many optimizations, bugfixes, and other improvements.
-* djedditt - Enhanced 3D depth slider support.
-* Morintari - splash screen artwork
-* nevumx - Custom control scheme
-* All GitHub contributors

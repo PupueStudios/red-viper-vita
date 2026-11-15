@@ -122,7 +122,7 @@ void gpu_init(void) {
         "varying vec3 vPal2;\n"
         "void main() {\n"
         "   vec2 tileCoord = gl_PointCoord.yx;\n"
-        "   if (vParams.z < 2.0) tileCoord.x = 1.0 - tileCoord.x;\n"
+        "   if (vParams.z >= 2.0) tileCoord.x = 1.0 - tileCoord.x;\n"
         "   if (vParams.z == 1.0 || vParams.z == 3.0) tileCoord.y = 1.0 - tileCoord.y;\n"
         "   vec2 realCoord = (vParams.xy + tileCoord) / vec2(32.0, 64.0);\n"
         "   vec4 color = texture2D(sTex, realCoord);\n"

@@ -48,10 +48,7 @@ typedef struct {
     int smooth;
     int stereo;
     int anaglyph;
-    int color_mode;
     int tint;
-    int multicolor;
-    int gradient;
     int show_fps;
     int sound;
     int volume;
@@ -114,6 +111,7 @@ uint16_t input_vb_keys(const InputFrame *in);
 bool input_menu_combo(const InputFrame *in);
 void input_capture_ps_button(bool capture);
 void input_release_ps_button_now(void);
+bool input_game_blocked(void);
 bool input_fast_forward(const InputFrame *in);
 bool input_confirm_is_circle(void);
 void input_set_fast_forward_latch(bool on);

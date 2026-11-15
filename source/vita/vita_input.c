@@ -20,11 +20,12 @@ static int repeat_timer[4];
 static bool confirm_circle = false;
 static bool prev_front_touch = false;
 static bool ff_latched = false;
+#define PS_LOCK_FLAGS (SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN | SCE_SHELL_UTIL_LOCK_TYPE_QUICK_MENU | SCE_SHELL_UTIL_LOCK_TYPE_USB_CONNECTION | SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN_2)
+
 static bool ps_locked = false;
-static bool ps_held = false;
 static bool ps_prev = false;
-static bool ps_pressed = false;
-static bool ps_unlock_pending = false;
+static bool ps_released = false;
+static bool wait_all_released = false;
 
 bool input_confirm_is_circle(void) {
     return confirm_circle;
@@ -75,16 +76,11 @@ void input_poll(InputFrame *in) {
     sceTouchPeek(SCE_TOUCH_PORT_FRONT, &touch_front, 1);
     sceTouchPeek(SCE_TOUCH_PORT_BACK, &touch_back, 1);
 
-    ps_held = (pad.buttons & SCE_CTRL_PSBUTTON) != 0;
-    ps_pressed = ps_locked && ps_held && !ps_prev;
-    ps_prev = ps_held;
-    if (ps_unlock_pending && !ps_held) {
-        ps_unlock_pending = false;
-        if (ps_locked) {
-            sceShellUtilUnlock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN);
-            ps_locked = false;
-        }
-    }
+    bool ps_now = (pad.buttons & SCE_CTRL_PSBUTTON) != 0;
+    ps_released = ps_locked && ps_prev && !ps_now;
+    ps_prev = ps_now;
+    if (wait_all_released && (pad.buttons & ~SCE_CTRL_PSBUTTON) == 0 && !ps_now && pad.lx > 128 - STICK_DEAD && pad.lx < 128 + STICK_DEAD && pad.ly > 128 - STICK_DEAD && pad.ly < 128 + STICK_DEAD && pad.rx > 128 - STICK_DEAD && pad.rx < 128 + STICK_DEAD && pad.ry > 128 - STICK_DEAD && pad.ry < 128 + STICK_DEAD)
+        wait_all_released = false;
 
     uint32_t held = map_menu_buttons();
     in->held = held;
@@ -163,26 +159,28 @@ uint16_t input_vb_keys(const InputFrame *in) {
 }
 
 bool input_menu_combo(const InputFrame *in) {
-    return in->touch_front_tap || ps_pressed;
+    return in->touch_front_tap || ps_released;
 }
 
 void input_capture_ps_button(bool capture) {
     if (capture) {
-        ps_unlock_pending = false;
-        if (!ps_locked) {
-            sceShellUtilLock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN);
-            ps_locked = true;
-        }
-        ps_prev = true;
+        if (!ps_locked) sceShellUtilLock(PS_LOCK_FLAGS);
+        ps_locked = true;
+        ps_prev = false;
+        wait_all_released = true;
     } else {
-        ps_unlock_pending = true;
+        if (ps_locked) sceShellUtilUnlock(PS_LOCK_FLAGS);
+        ps_locked = false;
+        ps_prev = false;
     }
 }
 
 void input_release_ps_button_now(void) {
-    ps_unlock_pending = false;
-    if (ps_locked) sceShellUtilUnlock(SCE_SHELL_UTIL_LOCK_TYPE_PS_BTN);
-    ps_locked = false;
+    input_capture_ps_button(false);
+}
+
+bool input_game_blocked(void) {
+    return wait_all_released;
 }
 
 bool input_fast_forward(const InputFrame *in) {

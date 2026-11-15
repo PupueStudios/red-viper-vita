@@ -20,10 +20,7 @@ void settings_defaults(void) {
     settings.smooth = 0;
     settings.stereo = STEREO_LEFT;
     settings.anaglyph = ANAGLYPH_RED_CYAN;
-    settings.color_mode = COLOR_TINT;
     settings.tint = 0;
-    settings.multicolor = 0;
-    settings.gradient = 0;
     settings.show_fps = 0;
     settings.sound = 1;
     settings.volume = 10;
@@ -43,10 +40,7 @@ static int vita_ini_handler(void *user, const char *section, const char *name, c
     else if (!strcmp(name, "smooth")) s->smooth = !!v;
     else if (!strcmp(name, "stereo")) s->stereo = clampi(v, 0, STEREO_COUNT - 1);
     else if (!strcmp(name, "anaglyph")) s->anaglyph = clampi(v, 0, ANAGLYPH_COUNT - 1);
-    else if (!strcmp(name, "color_mode")) s->color_mode = clampi(v, 0, COLOR_MODE_COUNT - 1);
     else if (!strcmp(name, "tint")) s->tint = clampi(v, 0, COLOR_TINT_COUNT - 1);
-    else if (!strcmp(name, "multicolor")) s->multicolor = clampi(v, 0, COLOR_MULTICOLOR_COUNT - 1);
-    else if (!strcmp(name, "gradient")) s->gradient = clampi(v, 0, COLOR_GRADIENT_COUNT - 1);
     else if (!strcmp(name, "show_fps")) s->show_fps = !!v;
     else if (!strcmp(name, "sound")) s->sound = !!v;
     else if (!strcmp(name, "volume")) s->volume = clampi(v, 0, 10);
@@ -75,12 +69,7 @@ void settings_save(void) {
     fprintf(f, "smooth=%d\n", settings.smooth);
     fprintf(f, "stereo=%d\n", settings.stereo);
     fprintf(f, "anaglyph=%d\n", settings.anaglyph);
-    int choice[4];
-    color_global_choice(choice);
-    fprintf(f, "color_mode=%d\n", choice[0]);
-    fprintf(f, "tint=%d\n", choice[1]);
-    fprintf(f, "multicolor=%d\n", choice[2]);
-    fprintf(f, "gradient=%d\n", choice[3]);
+    fprintf(f, "tint=%d\n", settings.tint);
     fprintf(f, "show_fps=%d\n", settings.show_fps);
     fprintf(f, "sound=%d\n", settings.sound);
     fprintf(f, "volume=%d\n", settings.volume);

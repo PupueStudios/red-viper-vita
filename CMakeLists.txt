@@ -84,7 +84,8 @@ target_link_libraries(${PROJECT_NAME}
   pthread
 )
 
-vita_create_self(eboot.bin ${PROJECT_NAME} UNSAFE)
+set(VITA_MAKE_FSELF_FLAGS "-a 0x2800000000000001" CACHE STRING "vita-make-fself flags" FORCE)
+vita_create_self(eboot.bin ${PROJECT_NAME} UNSAFE NOASLR)
 set(RV_VPK_ASSETS FILE ${CMAKE_CURRENT_SOURCE_DIR}/assets/logo.png assets/logo.png)
 file(GLOB RV_ART ${CMAKE_CURRENT_SOURCE_DIR}/assets/images/*)
 foreach(art ${RV_ART})

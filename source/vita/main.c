@@ -104,7 +104,6 @@ static void close_game(void) {
     sound_pause();
     save_sram();
     game_loaded = false;
-    color_on_game_closed();
     tVBOpt.FASTFORWARD = 0;
     input_set_fast_forward_latch(false);
 }
@@ -131,7 +130,6 @@ static void finish_load(void) {
     clearCache();
     sound_reset();
     sound_pause();
-    color_on_game_loaded((uint32_t)tVBOpt.CRC32, game_name);
     settings_apply();
     video_clear();
     game_loaded = true;
@@ -254,7 +252,7 @@ static bool run_game_frame(const InputFrame *in) {
         open_pause();
         return true;
     }
-    uint16_t keys = input_vb_keys(in);
+    uint16_t keys = input_game_blocked() ? 0 : input_vb_keys(in);
     vb_players[0].tHReg.SLB = keys & 0xFF;
     vb_players[0].tHReg.SHB = keys >> 8;
     tVBOpt.FASTFORWARD = input_fast_forward(in);

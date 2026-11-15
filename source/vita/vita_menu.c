@@ -128,8 +128,7 @@ static SettingRow rows[] = {
     {ROW_CHOICE, "Scaling", "Integer scaling keeps every LED perfectly square. Fit fills the height.", &settings.scale_mode, SCALE_COUNT, scale_names},
     {ROW_CHOICE, "Filtering", "Smooth softens pixels when the picture is not integer scaled.", &settings.smooth, 2, filter_names},
     {ROW_CHOICE, "LED grid", "Draws a subtle mesh between pixels, like the original mirror display.", &settings.led_grid, 2, onoff_names},
-    {ROW_CHOICE, "Colour mode", "Tint colours the screen like the original. Multicolor gives each of the Virtual Boy's four shades its own colour. Gradient maps brightness onto a colour ramp. Saved per game while one is running.", &settings.color_mode, COLOR_MODE_COUNT, color_mode_names},
-    {ROW_PALETTE, "Palette", "Colours used by the current colour mode. Saved per game while one is running.", NULL, 0, NULL},
+    {ROW_PALETTE, "Colour", "The colour the Virtual Boy's LEDs are shown in.", NULL, 0, NULL},
     {ROW_CHOICE, "Stereo view", "The Vita has one screen: pick an eye, wear anaglyph glasses, or view side by side.", &settings.stereo, STEREO_COUNT, stereo_names},
     {ROW_CHOICE, "Anaglyph glasses", "Lens colours used when Stereo view is set to Anaglyph 3D.", &settings.anaglyph, ANAGLYPH_COUNT, anaglyph_names},
     {ROW_CHOICE, "Show FPS", "Shows emulation speed in the corner while playing.", &settings.show_fps, 2, onoff_names},
@@ -413,6 +412,44 @@ static MenuAction dialog_update(const InputFrame *in) {
     return ACT_NONE;
 }
 
+static int wrap_lines(float scale, float maxw, const char *text, char lines[][160], int max_lines) {
+    char buf[1024];
+    snprintf(buf, sizeof(buf), "%s", text);
+    int n = 0;
+    char line[160] = "";
+    for (char *tok = strtok(buf, " "); tok; tok = strtok(NULL, " ")) {
+        char trial[320];
+        if (line[0]) snprintf(trial, sizeof(trial), "%s %s", line, tok);
+        else snprintf(trial, sizeof(trial), "%s", tok);
+        if (line[0] && ui_text_width(scale, trial) > maxw) {
+            if (n < max_lines) snprintf(lines[n], 160, "%s", line);
+            n++;
+            snprintf(line, sizeof(line), "%s", tok);
+        } else {
+            snprintf(line, sizeof(line), "%s", trial);
+        }
+    }
+    if (line[0]) {
+        if (n < max_lines) snprintf(lines[n], 160, "%s", line);
+        n++;
+    }
+    return n;
+}
+
+static void draw_wrapped(float x, float y, float maxw, float maxh, const char *text) {
+    static char lines[24][160];
+    float scale = 0.78f;
+    int n = 0;
+    float lh = 22;
+    for (; scale > 0.55f; scale -= 0.04f) {
+        lh = 28.0f * scale;
+        n = wrap_lines(scale, maxw, text, lines, 24);
+        if (n * lh <= maxh) break;
+    }
+    if (n > 24) n = 24;
+    for (int i = 0; i < n && (i + 1) * lh <= maxh + lh * 0.5f; i++) ui_text(x, y + i * lh, COL_TEXT_DIM, scale, lines[i]);
+}
+
 static void open_settings(MenuScreen from) {
     settings_return = from;
     screen = SCREEN_SETTINGS;
@@ -420,33 +457,16 @@ static void open_settings(MenuScreen from) {
     settings_hl = settings_sel;
 }
 
-static bool row_is_color(const SettingRow *r) {
-    return r->kind == ROW_PALETTE || r->value == &settings.color_mode;
-}
 
 static void palette_binding(int **value, int *count, const char *const **names) {
-    switch (settings.color_mode) {
-        case COLOR_MULTICOLOR:
-            *value = &settings.multicolor;
-            *count = COLOR_MULTICOLOR_COUNT;
-            *names = color_multicolor_names;
-            break;
-        case COLOR_GRADIENT:
-            *value = &settings.gradient;
-            *count = COLOR_GRADIENT_COUNT;
-            *names = color_gradient_names;
-            break;
-        default:
-            *value = &settings.tint;
-            *count = COLOR_TINT_COUNT;
-            *names = color_tint_names;
-            break;
-    }
+    *value = &settings.tint;
+    *count = COLOR_TINT_COUNT;
+    *names = color_tint_names;
 }
 
 static void on_setting_changed(bool game_loaded, const SettingRow *r) {
+    (void)r;
     settings_apply();
-    if (r && row_is_color(r)) color_on_changed();
     if (game_loaded) video_recompose();
 }
 
@@ -611,8 +631,7 @@ static void format_size(char *out, size_t len, int64_t size) {
 }
 
 static void strip_ext(char *out, size_t len, const char *name) {
-    strncpy(out, name, len - 1);
-    out[len - 1] = 0;
+    snprintf(out, len, "%s", name);
     char *dot = strrchr(out, '.');
     if (dot && dot != out) *dot = 0;
 }
@@ -1030,33 +1049,7 @@ static void draw_settings(bool game_loaded) {
     }
     SettingRow *r = &rows[settings_sel];
     ui_text(px + 18, pvy + pvh + 18, COL_TEXT, 1.0f, r->label);
-    if (r->desc) {
-        char buf[256];
-        strncpy(buf, r->desc, sizeof(buf) - 1);
-        buf[sizeof(buf) - 1] = 0;
-        float y = pvy + pvh + 50;
-        float maxw = pw - 36;
-        char line[256];
-        int ln = 0;
-        line[0] = 0;
-        char *tok = strtok(buf, " ");
-        while (tok) {
-            char trial[256];
-            if (ln) snprintf(trial, sizeof(trial), "%s %s", line, tok);
-            else snprintf(trial, sizeof(trial), "%s", tok);
-            if (ui_text_width(0.78f, trial) > maxw && ln) {
-                ui_text(px + 18, y, COL_TEXT_DIM, 0.78f, line);
-                y += 22;
-                snprintf(line, sizeof(line), "%s", tok);
-            } else {
-                snprintf(line, sizeof(line), "%s", trial);
-            }
-            ln = 1;
-            tok = strtok(NULL, " ");
-        }
-        if (ln) ui_text(px + 18, y, COL_TEXT_DIM, 0.78f, line);
-    }
-    ui_text(px + 18, sy + ph - 34, COL_TEXT_FAINT, 0.68f, "Red Viper for PS Vita  ·  dynarec build");
+    if (r->desc) draw_wrapped(px + 18, pvy + pvh + 50, pw - 36, sy + ph - 14 - (pvy + pvh + 50), r->desc);
 
     UiHint hints[] = {
         {GLYPH_DPAD, "Change"},

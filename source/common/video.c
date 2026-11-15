@@ -75,6 +75,18 @@ void video_render(int displayed_fb, bool on_time) {
         }
 	}
 
+	if (CHECK_GAMEID("01VVGE") || CHECK_GAMEID("E4VVGJ")) {
+		bool hills = *(uint8_t *)(vb_state->V810_DISPLAY_RAM.off + 0x3dbc0) == 0x40 &&
+			*(uint16_t *)(vb_state->V810_DISPLAY_RAM.off + 0x3dbe6) == 0x48 &&
+			memcmp((uint8_t *)vb_state->V810_DISPLAY_RAM.off + 0x3dbec, "\0\0\x80\x01\x1f\0\0\x80\0\0", 10) == 0;
+		if (hills) {
+			tVBOpt.RENDERMODE = RM_TOCPU;
+		} else if (tVBOpt.RENDERMODE != RM_TOGPU) {
+			tVBOpt.RENDERMODE = RM_TOGPU;
+			gpu_clear_screen(false);
+		}
+	}
+
 	g_displayed_fb = displayed_fb;
 	vip_displayed_fb = tVBOpt.DOUBLE_BUFFER ? displayed_fb : 0;
 
