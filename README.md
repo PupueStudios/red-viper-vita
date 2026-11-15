@@ -5,6 +5,10 @@
 A Virtual Boy emulator for the PlayStation Vita, ported from [Red Viper](https://github.com/skyfloogle/red-viper) for the Nintendo 3DS.
 It keeps Red Viper's V810 core and ARM dynamic recompiler, which runs natively on the Vita's Cortex-A9, and renders on the GPU through [vitaGL](https://github.com/Rinnegatamante/vitaGL).
 
+
+> [!CAUTION]
+> This project was made with AI assistance. Expect bugs, and please report them in Issues.
+
 ## Features
 
 * V810 dynarec with busywait detection
