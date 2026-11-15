@@ -1,4 +1,4 @@
-Red Viper Vita
+## Red Viper Vita
 
 A Virtual Boy emulator for the PlayStation Vita, ported from [Red Viper](https://github.com/skyfloogle/red-viper) for the Nintendo 3DS.
 It keeps Red Viper's V810 core and ARM dynamic recompiler, which runs natively on the Vita's Cortex-A9, and renders on the GPU through [vitaGL](https://github.com/Rinnegatamante/vitaGL).
