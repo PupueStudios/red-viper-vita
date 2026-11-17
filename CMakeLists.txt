@@ -92,6 +92,11 @@ foreach(art ${RV_ART})
   get_filename_component(art_name ${art} NAME)
   list(APPEND RV_VPK_ASSETS FILE ${art} assets/images/${art_name})
 endforeach()
+file(GLOB RV_PACKS ${CMAKE_CURRENT_SOURCE_DIR}/assets/colorpacks/*)
+foreach(pack ${RV_PACKS})
+  get_filename_component(pack_name ${pack} NAME)
+  list(APPEND RV_VPK_ASSETS FILE ${pack} assets/colorpacks/${pack_name})
+endforeach()
 
 vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
   VERSION ${VITA_VERSION}

@@ -126,6 +126,18 @@ void video_render(int displayed_fb, bool on_time) {
     }
 }
 
+void video_rerender(void) {
+	if (vb_state->tVIPREG.XPCTRL & XPEN) {
+		if (tDSPCACHE.CharCacheInvalid)
+			update_texture_cache_hard();
+		video_hard_render(vip_displayed_fb);
+		tDSPCACHE.CharCacheInvalid = false;
+		memset(tDSPCACHE.CharacterCache, 0, sizeof(tDSPCACHE.CharacterCache));
+	}
+	gpu_soft_to_texture(g_displayed_fb);
+	video_flush(false);
+}
+
 void video_flush(bool default_for_both) {
     gpu_flush(default_for_both, g_displayed_fb, vip_displayed_fb);
 

@@ -149,6 +149,7 @@ void video_init(bool also_gpu);
 void video_render(int displayed_fb, bool on_time);
 void video_download_vip(int drawn_fb);
 void video_flush(bool default_for_both);
+void video_rerender(void);
 void video_quit(void);
 
 void V810_SetPal(int BRTA, int BRTB, int BRTC);

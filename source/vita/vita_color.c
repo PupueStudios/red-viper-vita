@@ -16,6 +16,7 @@ static const float tints[COLOR_TINT_COUNT][3] = {
 };
 
 const char *const color_tint_names[COLOR_TINT_COUNT] = {"Red", "White", "Green", "Amber", "Blue", "Purple"};
+const char *const color_mode_names[COLOR_MODE_COUNT] = {"Tint only", "Colour packs", "Always colour"};
 
 static float shade_level(int brt) {
     int saved_tint = tVBOpt.TINT;

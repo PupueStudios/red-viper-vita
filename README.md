@@ -14,6 +14,7 @@ It keeps Red Viper's V810 core and ARM dynamic recompiler, which runs natively o
 * V810 dynarec with busywait detection
 * Red Viper's hardware VIP renderer, running on the GPU through vitaGL
 * Six display colours: red, white, green, amber, blue and purple
+* Colour packs from [VBoy Color](https://github.com/yuk27/VBoyColor): hand-painted colours for Bound High, Dragon Hopper, Galactic Pinball, Innsmouth no Yakata, Jack Bros., Mario Clash, Mario's Tennis, Panic Bomber, Space Invaders Virtual Collection, Teleroboxer, Vertical Force, V-Tetris, Virtual Bowling, Wario Land, plus the menus and HUD of Red Alarm, 3-D Tetris and Golf
 * Integer 2x, fit or stretch scaling, sharp or smooth filtering, and an LED-grid shader
 * Stereo output as left eye, right eye, red/cyan, red/blue or red/green anaglyph, or side by side
 * Battery saves, plus 10 savestate slots with screenshot previews
@@ -25,6 +26,7 @@ It keeps Red Viper's V810 core and ARM dynamic recompiler, which runs natively o
 * vitaGL compiles its shaders on the console, so `libshacccg.suprx` must be extracted to `ur0:data/` with [ShaRKF00D](https://github.com/Rinnegatamante/ShaRKF00D) (needed by every vitaGL homebrew).
 * Put `.vb` or `.zip` ROMs in `ux0:data/red-viper/roms` (any folder works; the browser remembers the last one).
 * Box art for the official library is built in and matched by ROM name, ignoring region tags if there's no exact match. To add your own art, put `<rom name>.png` or `.jpg` in `ux0:data/red-viper/images`; your images take priority.
+* Colour packs are built in and found by ROM name or CRC. A `.vbcp` file next to the ROM, or in `ux0:data/red-viper/colorpacks`, takes priority, so you can use packs made with VBoy Color's desktop tools. Settings → Colour mode picks *Colour packs* (default: games without a pack keep the tint), *Always colour* (games without a pack are coloured layer by layer too) or *Tint only*.
 * Battery saves go to `ux0:data/red-viper/saves`, savestates and their thumbnails to `ux0:data/red-viper/savestates`, settings to `ux0:data/red-viper/vita.ini`.
 
 If you're looking for games, check out [Planet Virtual Boy's homebrew section](https://www.virtual-boy.com/homebrew/)!
@@ -104,6 +106,7 @@ Reality Boy is in no way affiliated with either of these parties
 ### Credits
 
 * Red Viper (skyfloogle and contributors) - the emulator this port is based on.
+* yuk27 - VBoy Color and its colour packs.
 * Rinnegatamante - vitaGL.
 * Everyone mentioned in the license. Without Reality Boy and Red Dragon it wouldn't have been possible.
 * smealum and contributors - ctrulib.

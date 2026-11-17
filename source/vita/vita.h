@@ -49,6 +49,7 @@ typedef struct {
     int stereo;
     int anaglyph;
     int tint;
+    int color_mode;
     int show_fps;
     int sound;
     int volume;
@@ -126,6 +127,7 @@ bool video_make_thumbnail(uint32_t *dst, int w, int h);
 void video_apply_filter(void);
 void video_clear(void);
 void video_recompose(void);
+void video_color_refresh(bool game_loaded);
 bool vita_shaders_failed(void);
 
 #endif

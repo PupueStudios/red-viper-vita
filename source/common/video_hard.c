@@ -6,6 +6,7 @@
 #include "v810_mem.h"
 #include "vb_set.h"
 #include "video_hard_internal.h"
+#include "vita_colorpack.h"
 
 AffineCacheEntry tileMapCache[AFFINE_CACHE_SIZE];
 
@@ -116,8 +117,9 @@ int render_affine_cache(int mapid, vertex *vbuf, vertex *vcur, int umin, int uma
 			)) continue;
 			cache->tiles[(y << 3) + (x >> 3)] = tile;
 
-			short u = (tileid % 32);
-			short v = (tileid / 32);
+			int slot = cp_affine_slot(tileid, tile >> 14, 4096 * mapid + (y << 3) + (x >> 3));
+			short u = (slot % 32);
+			short v = (slot / 32);
 
 			if (vcur >= vbuf + VBUF_SIZE) {
 				dprintf(0, "VBUF OVERRUN!\n");
@@ -167,6 +169,10 @@ void video_hard_render(int drawn_fb) {
 		tileMapCache[i].lvmax = tileMapCache[i].vmax;
 	}
 
+	WORLD *worlds = (WORLD *)(vb_state->V810_DISPLAY_RAM.off + 0x3d800);
+
+	cp_frame_begin(worlds, tVBOpt.RENDERMODE == RM_TOCPU);
+
 	gpu_setup_screen(start_eye, end_eye);
 
 	gpu_setup_drawing();
@@ -176,8 +182,6 @@ void video_hard_render(int drawn_fb) {
 
 	gpu_setup_tile_drawing();
 
-	WORLD *worlds = (WORLD *)(vb_state->V810_DISPLAY_RAM.off + 0x3d800);
-
 	uint8_t object_group_id = 3;
 
 	for (int8_t wrld = 31; wrld >= 0; wrld--) {
@@ -186,6 +190,7 @@ void video_hard_render(int drawn_fb) {
 		if (worlds[wrld].on == 0)
 			continue;
 		int vcount = 0;
+		cp_world_begin(wrld);
 
 		if (worlds[wrld].bgm != 3) {
 			// background world
@@ -238,6 +243,8 @@ void video_hard_render(int drawn_fb) {
 					mapy &= scy - 1;
 				}
 				bool over_visible = !over || tileVisible[tilemap[over_tile] & 0x07ff];
+				int mark_eye = (worlds[wrld].on & 2) ? 0 : 1;
+				int mark_off = (mark_eye == 0 ? base_gx - gp : base_gx + gp) - (mark_eye == 0 ? base_mx - mp : base_mx + mp) + (left_mx & ~7);
 
 				for (int y = gy - (my & 7); y < gy + h; y += 8) {
 					if (y >= 224) break;
@@ -248,7 +255,8 @@ void video_hard_render(int drawn_fb) {
 						for (int x = 0; x < 512; x += 8) {
 							if (x + left_gx - abs(mp) * 2 - (left_mx & 7) >= 384) break;
 							bool use_over = over && ((mapx & (scx - 1)) != mapx || (mapy & (scy - 1)) != mapy);
-							uint16_t tile = tilemap[use_over ? over_tile : (64 * 64) * current_map + 64 * ty + tx];
+							int cell = use_over ? over_tile : (64 * 64) * current_map + 64 * ty + tx;
+							uint16_t tile = tilemap[cell];
 							if (++tx >= 64) {
 								tx = 0;
 								if ((++mapx & (scx - 1)) == 0 && !over) mapx = 0;
@@ -256,8 +264,13 @@ void video_hard_render(int drawn_fb) {
 							}
 							uint16_t tileid = tile & 0x07ff;
 							if (!tileVisible[tileid]) continue;
-							short u = (tileid % 32);
-							short v = (tileid / 32);
+							int slot = tileid;
+							if (cp_frame_on) {
+								cp_mark_bg(tileid, x + mark_off, y);
+								slot = cp_bg_slot(tileid, tile >> 14, cell & 0xffff, x + mark_off, y);
+							}
+							short u = (slot % 32);
+							short v = (slot / 32);
 
 							if (vcur >= vbuf + VBUF_SIZE) {
 								dprintf(0, "VBUF OVERRUN!\n");
@@ -281,6 +294,7 @@ void video_hard_render(int drawn_fb) {
 				}
 
 				if (vcount != 0) {
+					bool fills = cp_frame_on && cp_world_used_fill();
 					for (int eye = start_eye; eye < end_eye; eye++) {
 						if (!(worlds[wrld].on & (2 >> eye)))
 							continue;
@@ -304,6 +318,7 @@ void video_hard_render(int drawn_fb) {
 						gpu_set_scissor(true, (gy >= 0 ? gy : 0) + 256 * eye, gx >= 0 ? gx : 0, (gy + h < 256 ? gy + h : 256) + 256 * eye, gx + w);
 
 						gpu_draw_tiles(vstart - vbuf, vcount);
+						if (fills) gpu_draw_fills(vstart - vbuf, vcount);
 
 						gpu_set_tile_offset(0, 0);
 					}
@@ -446,12 +461,19 @@ void video_hard_render(int drawn_fb) {
 				s16 y = *(u8*)&obj_ptr[2];
 				if (y > 224) y = (s8)y;
 
-				short u = (tileid % 32);
-				short v = (tileid / 32);
-
 				short palette = (cw3 >> 14) | 4;
 
 				s16 jp = (s16)(cw1 << 6) >> 6;
+
+				int slot = tileid;
+				if (cp_frame_on && (cw1 & 0xc000)) {
+					int mark_x = (cw1 & 0x8000) ? base_x - jp : base_x + jp;
+					mark_x = (int)((unsigned)mark_x << 22) >> 22;
+					cp_mark_obj(tileid, mark_x, y);
+					slot = cp_obj_slot(tileid, cw3 >> 14, mark_x, y);
+				}
+				short u = (slot % 32);
+				short v = (slot / 32);
 
 				for (int eye = start_eye; eye < end_eye; eye++) {
 					if (!(cw1 & (0x8000 >> eye)))

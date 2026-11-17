@@ -19,6 +19,7 @@
 #include "video_hard.h"
 #include "vita.h"
 #include "vita_color.h"
+#include "vita_colorpack.h"
 #include "vita_menu.h"
 #include "vita_ui.h"
 
@@ -104,6 +105,7 @@ static void close_game(void) {
     sound_pause();
     save_sram();
     game_loaded = false;
+    cp_unload();
     tVBOpt.FASTFORWARD = 0;
     input_set_fast_forward_latch(false);
 }
@@ -127,6 +129,8 @@ static bool begin_load(const char *path) {
 }
 
 static void finish_load(void) {
+    bool packed = cp_load_for_game(tVBOpt.ROM_PATH, game_name, (uint32_t)tVBOpt.CRC32, (uint32_t)V810_ROM1.size);
+    video_color_refresh(false);
     clearCache();
     sound_reset();
     sound_pause();
@@ -136,6 +140,7 @@ static void finish_load(void) {
     tVBOpt.FASTFORWARD = 0;
     input_set_fast_forward_latch(false);
     enter_game_mode();
+    if (packed && settings.color_mode != COLOR_MODE_TINT) ui_toast("Colour pack loaded");
 }
 
 static void step_loading(void) {

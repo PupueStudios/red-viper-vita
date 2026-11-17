@@ -128,7 +128,8 @@ static SettingRow rows[] = {
     {ROW_CHOICE, "Scaling", "Integer scaling keeps every LED perfectly square. Fit fills the height.", &settings.scale_mode, SCALE_COUNT, scale_names},
     {ROW_CHOICE, "Filtering", "Smooth softens pixels when the picture is not integer scaled.", &settings.smooth, 2, filter_names},
     {ROW_CHOICE, "LED grid", "Draws a subtle mesh between pixels, like the original mirror display.", &settings.led_grid, 2, onoff_names},
-    {ROW_PALETTE, "Colour", "The colour the Virtual Boy's LEDs are shown in.", NULL, 0, NULL},
+    {ROW_CHOICE, "Colour mode", "Colour packs paint games that have one (built in, or a .vbcp next to the ROM or in ux0:data/red-viper/colorpacks); other games keep the tint. Always colour also colours games without a pack, layer by layer.", &settings.color_mode, COLOR_MODE_COUNT, color_mode_names},
+    {ROW_PALETTE, "Tint", "The colour the Virtual Boy's LEDs are shown in when a game is not shown in colour.", NULL, 0, NULL},
     {ROW_CHOICE, "Stereo view", "The Vita has one screen: pick an eye, wear anaglyph glasses, or view side by side.", &settings.stereo, STEREO_COUNT, stereo_names},
     {ROW_CHOICE, "Anaglyph glasses", "Lens colours used when Stereo view is set to Anaglyph 3D.", &settings.anaglyph, ANAGLYPH_COUNT, anaglyph_names},
     {ROW_CHOICE, "Show FPS", "Shows emulation speed in the corner while playing.", &settings.show_fps, 2, onoff_names},
@@ -465,9 +466,9 @@ static void palette_binding(int **value, int *count, const char *const **names) 
 }
 
 static void on_setting_changed(bool game_loaded, const SettingRow *r) {
-    (void)r;
     settings_apply();
-    if (game_loaded) video_recompose();
+    if (!r || r->value == &settings.color_mode) video_color_refresh(game_loaded);
+    else if (game_loaded) video_recompose();
 }
 
 static MenuAction browser_update(const InputFrame *in) {
